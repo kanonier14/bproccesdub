@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Questionnaire</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <div th:replace="partial/headlibs"/>
+</head>
+<body>
+<div class="body_wrapper">
+    <div th:replace="partial/header"/>
+    <div class="main-content">
+        <div th:each="process : ${processTemplates}">
+            <div>
+                <span th:text="${process.name}"></span>
+                <span><a th:href="@{/process/start(id=${process.id})}">Старт</a></span>
+            </div>
+        </div>
+    </div>
+    <div th:replace="partial/footerlibs"/>
+</div>
+</body>
+</html>

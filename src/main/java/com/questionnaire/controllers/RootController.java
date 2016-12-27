@@ -1,10 +1,7 @@
 package com.questionnaire.controllers;
 
 import com.questionnaire.core.StepState;
-import com.questionnaire.entity.dbentity.ProcessInstance;
-import com.questionnaire.entity.dbentity.ProcessTemplate;
-import com.questionnaire.entity.dbentity.StepInstance;
-import com.questionnaire.entity.dbentity.TemplateStep;
+import com.questionnaire.entity.dbentity.*;
 import com.questionnaire.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -36,11 +35,13 @@ public class RootController {
     @Autowired
     private TemplateStepRepository templateStepRepository;
     @Autowired
-    private UserGroupRepository userGroupRepository;
-    @Autowired
     private UserRepository userRepository;
     @Autowired
     private StepInstanceRepository stepInstanceRepository;
+    @Autowired
+    private UsloviePerehodaRepository usloviePerehodaRepository;
+    @Autowired
+    private UserGroupRepository userGroupRepository;
 
     @RequestMapping("/")
     public String getMainPage() {
@@ -58,6 +59,8 @@ public class RootController {
         ProcessTemplate processTemplate = new ProcessTemplate();
         processTemplate.setName(processName);
 
+        Map<String, TemplateStep> templateStepMap = new HashMap<>();
+        Map<UsloviePerehoda, String> usloviePerehodaStringMap = new HashMap<>();
         List<TemplateStep> steps = request.getParameterMap().entrySet().stream()
                 .filter(parameterEntry -> questionPattern.matcher(parameterEntry.getKey()).matches())
                 .map(parameterEntry -> {
@@ -65,9 +68,31 @@ public class RootController {
                     templateStep.setName(parameterEntry.getValue()[0]);
                     String orderParam = parameterEntry.getKey() + "_order";
                     templateStep.setOrder(Integer.valueOf(request.getParameter(orderParam)));
+                    templateStep.setUserGroup(userGroupRepository.findByIdUserGroup(request.getParameter(parameterEntry.getKey() + "_assignee")));
                     templateStepRepository.save(templateStep);
+                    templateStepMap.put(parameterEntry.getKey(), templateStep);
+                    request.getParameterMap().entrySet().stream()
+                            .filter(parameter -> Pattern.compile(parameterEntry.getKey().replaceAll("_title", "") + "_perehod_([0-9]+)").matcher(parameter.getKey()).matches())
+                            .forEach(parameter -> {
+                                UsloviePerehoda usloviePerehoda = new UsloviePerehoda();
+                                usloviePerehoda.setTitle(parameter.getValue()[0]);
+                                usloviePerehoda.setCurrentStep(templateStep);
+                                usloviePerehodaStringMap.put(usloviePerehoda, request.getParameter(parameter.getKey() + "_select"));
+                            });
                     return templateStep;
                 }).collect(Collectors.toList());
+        usloviePerehodaStringMap.entrySet().forEach(usloviePerehodaStringEntry -> {
+            usloviePerehodaStringEntry.getKey().setNextStep(templateStepMap.get(usloviePerehodaStringEntry.getValue()));
+            usloviePerehodaRepository.save(usloviePerehodaStringEntry.getKey());
+        });
+
+        templateStepMap.values().stream()
+                .forEach(templateStep -> {
+                    templateStep.setUsloviePerehodas(usloviePerehodaStringMap.keySet().stream()
+                            .filter(usloviePerehoda -> usloviePerehoda.getCurrentStep().getId().equals(templateStep.getId()))
+                            .collect(Collectors.toList()));
+                    templateStepRepository.save(templateStep);
+                });
         processTemplate.setSteps(steps);
         processTemplateRepository.save(processTemplate);
         response.sendRedirect("/");

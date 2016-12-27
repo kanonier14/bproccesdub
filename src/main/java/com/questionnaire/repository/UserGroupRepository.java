@@ -7,4 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * Created by Igor on 25.12.2016.
  */
 public interface UserGroupRepository extends MongoRepository<UserGroup, String> {
+    UserGroup findByIdUserGroup(String id);
 }

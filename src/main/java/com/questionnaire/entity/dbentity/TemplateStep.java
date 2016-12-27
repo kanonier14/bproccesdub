@@ -5,6 +5,8 @@ import com.questionnaire.core.StepType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import java.util.List;
+
 /**
  * @author Igor_Strakhov
  */
@@ -20,7 +22,27 @@ public class TemplateStep {
     private TemplateStep previousStep;
     @DBRef
     private TemplateStep nextStep;
+    @DBRef
+    private List<UsloviePerehoda> usloviePerehodas;
     private Integer order;
+    @DBRef
+    private UserGroup userGroup;
+
+    public UserGroup getUserGroup() {
+        return userGroup;
+    }
+
+    public void setUserGroup(UserGroup userGroup) {
+        this.userGroup = userGroup;
+    }
+
+    public List<UsloviePerehoda> getUsloviePerehodas() {
+        return usloviePerehodas;
+    }
+
+    public void setUsloviePerehodas(List<UsloviePerehoda> usloviePerehodas) {
+        this.usloviePerehodas = usloviePerehodas;
+    }
 
     public Integer getOrder() {
         return order;

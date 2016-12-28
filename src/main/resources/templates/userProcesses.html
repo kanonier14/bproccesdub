@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Questionnaire</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <div th:replace="partial/headlibs"/>
+</head>
+<body>
+<div class="body_wrapper">
+    <div th:replace="partial/header"/>
+    <div class="main-content">
+        <div th:each="process : ${processes}">
+            <div>
+                <span th:text="${process.template.name}"/><br/>
+                <span>Шаг: </span><span th:text="${process.activeStep.templateStep.name}"/><br/>
+                Действие:<br/>
+                <div th:each="uslovie : ${process.activeStep.templateStep.usloviePerehodas}">
+                    <div>
+                        <a th:href="@{/step/processing(iduslovie=${uslovie.id},idproc=${process.idInstance})}">
+                            <span th:text="${uslovie.title}"/>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div th:replace="partial/footerlibs"/>
+</div>
+</body>
+</html>

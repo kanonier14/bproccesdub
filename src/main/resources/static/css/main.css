@@ -1,3 +1,39 @@
+.create_process_form {
+    text-align: center;
+    width: 66%;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin-top: 20px;
+    float: left;
+}
+
+.create_step {
+    width: 100%;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.myDiagramDiv {
+    width:33%;
+     height:650px;
+     float:left;
+     background-color: #DAE4E4;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 html, body {
     height: 100%;
 }
@@ -83,6 +119,8 @@ header {
     border-radius: 0 0 4px 4px;
     text-align: left;
     margin-top: 5px;
+    margin:20px;
+    max-width: 960px;
 }
 
 .questionnaire-form-wrapper {

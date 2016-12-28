@@ -11,16 +11,27 @@ var CreateTemplateForm = React.createClass({
                 });
                 self.setState(newState);
             });
-        return({steps: []});
+        return({steps: [], flowChartState: {nodes:[], links: []}});
     },
 
     addStep: function() {
         let previousStepsState = this.state.steps;
         let nameStep = 'step_' + previousStepsState.length;
         previousStepsState.push({name: nameStep, order: previousStepsState.length});
+        this.addNode(nameStep);
         this.setState({steps: previousStepsState});
     },
 
+    addNode: function(stepName) {
+        let newFlowChartState = this.state.flowChartState;
+        newFlowChartState.nodes.push({key: stepName, color: 'lightgreen'});
+        this.setState(Object.assign(this.state, newFlowChartState));
+        load(this.state.flowChartState);
+    },
+
+    componentDidMount: function() {
+        initFlowChart();
+    },
     render: function() {
         let stepsState = this.state.steps;
         let users = this.state.users;
@@ -28,12 +39,20 @@ var CreateTemplateForm = React.createClass({
             return <Step users={users} name={item.name} order={item.order} steps={stepsState}></Step>;
         });
         return(
-            <form action="/template/create" method="post">
-                Введите название процесса: <textarea name="process_name"/><br/>
-                <a onClick={this.addStep}>Добавить шаг</a>
+        <div>
+            <form className="create_process_form" action="/template/create" method="post">
+                <div className="create_process_form__header">
+                    Введите название процесса: <br/>
+                    <textarea className="questionnaire-edit--questionnaire-title" name="process_name"/>
+                </div>
+                <div className="newsurvey">
+                    <a className="newitem" onClick={this.addStep}>Добавить шаг</a>
+                </div>
                 {steps}
-                <br/><button>Создать шаблон</button>
+                <br/><div className="newsurvey"><button className="newitem">Создать шаблон</button></div>
             </form>
+            <div id="myDiagramDiv" className="myDiagramDiv"></div>
+        </div>
         );
     }
 });
@@ -66,9 +85,9 @@ var Step = React.createClass({
          }
          let assigneeParam = stepTitle + '_assignee';
         return(
-            <div>
+            <div className="create_step">
                 Шаг #{order}<br/>
-                Введите название шага: <input name={stepTitle} type="text"/>
+                Введите название шага: <textarea name={stepTitle}/>
                 <input name={stepOrder} value={order} type="hidden"/>
                 <br/>
                 Выберите ответственного за шаг:

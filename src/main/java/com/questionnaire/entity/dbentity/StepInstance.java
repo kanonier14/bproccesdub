@@ -16,6 +16,25 @@ public class StepInstance {
     private ProcessInstance processInstance;
     @DBRef
     private TemplateStep templateStep;
+    @DBRef
+    private UserGroup userGroup;
+    private String timeStart;
+
+    public String getTimeStart() {
+        return timeStart;
+    }
+
+    public void setTimeStart(String timeStart) {
+        this.timeStart = timeStart;
+    }
+
+    public UserGroup getUserGroup() {
+        return userGroup;
+    }
+
+    public void setUserGroup(UserGroup userGroup) {
+        this.userGroup = userGroup;
+    }
 
     public TemplateStep getTemplateStep() {
         return templateStep;

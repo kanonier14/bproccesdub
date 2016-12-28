@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 @Controller
 public class RootController {
 
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd 'в' HH:mm");
 
     private final String STEP_TITLE_REGEXP = "step_([0-9]+)_title";
     private final Pattern questionPattern = Pattern.compile(STEP_TITLE_REGEXP);
@@ -106,7 +109,8 @@ public class RootController {
     }
 
     @RequestMapping("/process/inprocessing")
-    public String getProcessingProcessesPage() {
+    public String getProcessingProcessesPage(Model model) {
+        model.addAttribute("activeProcesses", processInstanceRepository.findAll());
         return "inprocessing";
     }
 
@@ -133,6 +137,8 @@ public class RootController {
                     stepInstance.setTemplateStep(step);
                     if(step.getOrder() == 0){
                         stepInstance.setStepState(StepState.ACTIVE);
+                        stepInstance.setTimeStart(dateFormat.format(new Date()));
+                        instance.setActiveStep(stepInstance);
                     } else {
                         stepInstance.setStepState(StepState.WAITED);
                     }
@@ -140,6 +146,46 @@ public class RootController {
                     return stepInstance;
                 }).collect(Collectors.toList());
         instance.setSteps(stepInstances);
+        instance.setDateStart(dateFormat.format(new Date()));
         processInstanceRepository.save(instance);
+    }
+
+    @RequestMapping("/login")
+    public String getLoginPage(Model model) {
+        model.addAttribute("users", userGroupRepository.findAll());
+        return "login";
+    }
+
+    @RequestMapping("/getprocesses")
+    public String getUserProcesses(Model model, HttpServletRequest request) {
+        String userId = request.getParameter("userid");
+        List<ProcessInstance> processInstances = processInstanceRepository.findAll().stream()
+                .filter(processInstance ->
+                    processInstance.getActiveStep().getTemplateStep().getUserGroup().getIdUserGroup()
+                            .equals(userId)).collect(Collectors.toList());
+
+        model.addAttribute("processes", processInstances);
+        return "userProcesses";
+    }
+
+    @RequestMapping("/step/processing")
+    public void processingStep(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String iduslovie = request.getParameter("iduslovie");
+        String idProc = request.getParameter("idproc");
+        ProcessInstance processInstance = processInstanceRepository.findByIdInstance(idProc);
+        UsloviePerehoda usloviePerehoda = usloviePerehodaRepository.findById(iduslovie);
+        processInstance.getSteps().stream()
+                .forEach(stepInstance -> {
+                    if (stepInstance.getTemplateStep().getId().equals(usloviePerehoda.getNextStep().getId())) {
+                        stepInstance.setStepState(StepState.ACTIVE);
+                        processInstance.setActiveStep(stepInstance);
+                        processInstanceRepository.save(processInstance);
+                        stepInstanceRepository.save(stepInstance);
+                    } else if (stepInstance.getTemplateStep().getId().equals(usloviePerehoda.getCurrentStep().getId())) {
+                        stepInstance.setStepState(StepState.FINISHED);
+                        stepInstanceRepository.save(stepInstance);
+                    }
+                });
+        response.sendRedirect("/process/inprocessing");
     }
 }

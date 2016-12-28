@@ -9,6 +9,15 @@
 <div class="body_wrapper">
     <div th:replace="partial/header"/>
     <div class="main-content">
+        <div class="question-edit-form" th:each="process : ${activeProcesses}">
+            <div>Имя процесса: <span th:text="${process.template.name}"/>
+            </div>
+            <div>Дата старта: <span th:text="${process.dateStart}"/>
+            </div>
+            <div>
+                Текущий шаг: <span th:text="${process.activeStep.templateStep.name}"/>(<span th:text="${process.activeStep.templateStep.userGroup.groupName}"/>)
+            </div>
+        </div>
     </div>
     <div th:replace="partial/footerlibs"/>
 </div>

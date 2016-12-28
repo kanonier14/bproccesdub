@@ -16,6 +16,25 @@ public class ProcessInstance {
     private ProcessTemplate template;
     @DBRef
     private List<StepInstance> steps;
+    @DBRef
+    private StepInstance activeStep;
+    private String dateStart;
+
+    public String getDateStart() {
+        return dateStart;
+    }
+
+    public void setDateStart(String dateStart) {
+        this.dateStart = dateStart;
+    }
+
+    public StepInstance getActiveStep() {
+        return activeStep;
+    }
+
+    public void setActiveStep(StepInstance activeStep) {
+        this.activeStep = activeStep;
+    }
 
     public String getIdInstance() {
         return idInstance;

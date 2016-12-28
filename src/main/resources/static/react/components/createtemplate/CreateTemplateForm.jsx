@@ -29,14 +29,26 @@ var CreateTemplateForm = React.createClass({
         load(this.state.flowChartState);
     },
 
+    addLink: function(e) {
+        let regExp1 = /_perehod_[0-9]+/;
+        let stepFrom = e.currentTarget.dataset.from.replace(regExp1, '');
+        let regExp2 = /_title/;
+        let stepTo = e.currentTarget.value.replace(regExp2, '');
+        let newFlowChartState = this.state.flowChartState;
+        newFlowChartState.links.push({from: stepFrom, to: stepTo});
+        this.setState(Object.assign(this.state, newFlowChartState));
+        load(this.state.flowChartState);
+    },
+
     componentDidMount: function() {
         initFlowChart();
     },
     render: function() {
         let stepsState = this.state.steps;
         let users = this.state.users;
+        let addLink = this.addLink;
         let steps = stepsState.map(function (item) {
-            return <Step users={users} name={item.name} order={item.order} steps={stepsState}></Step>;
+            return <Step addLink={addLink} users={users} name={item.name} order={item.order} steps={stepsState}></Step>;
         });
         return(
         <div>
@@ -74,8 +86,9 @@ var Step = React.createClass({
         let order = this.props.order;
         let stepTitle = stepName + '_title';
         let stepOrder = stepTitle + '_order';
+        let addLink = this.props.addLink;
         let perehody = this.state.perehody.map(function (item) {
-                    return <Perehod name={item.name} steps={steps}></Perehod>;
+                    return <Perehod addLink={addLink} name={item.name} steps={steps}></Perehod>;
                 });
          let usersOption;
          if (this.props.users !== null) {
@@ -111,10 +124,11 @@ var Perehod = React.createClass({
             let stepTitle = item.name + '_title';
             return <option value={stepTitle}>Шаг #{item.order}</option>
         });
+        let addLink = this.props.addLink;
         return(
             <div>
                 <textarea name={name}/><br/>
-                <select name={selectName}>
+                <select onChange={addLink} data-from={name} name={selectName}>
                     {options}
                 </select>
             </div>
